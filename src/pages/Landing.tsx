@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import PulseMonitor from '../components/PulseMonitor'
 
 const scrollTo = (id: string) =>
@@ -204,12 +205,12 @@ export default function Landing() {
               <Eyebrow className="text-mint">Бесплатный чек-лист</Eyebrow>
               <h3 className="mt-2 mb-1.5 text-[1.5rem] font-extrabold tracking-[-0.025em]">17 задач, которые пора отдать роботу</h3>
               <p className="max-w-[46ch] text-[0.98rem] text-ink-soft">
-                Оставьте контакты — пришлём чек-лист и посчитаем, сколько часов в неделю рутина стоит вам сейчас.
+                Пройдитесь по списку и отметьте, что делаете руками — посчитаем, сколько часов в неделю рутина стоит вам сейчас.
               </p>
             </div>
-            <button onClick={() => scrollTo('signup')} className="rounded-xl bg-accent-bg px-[1.4em] py-[0.85em] font-semibold text-white transition-colors hover:bg-accent-bg-hov">
-              Забрать чек-лист →
-            </button>
+            <Link to="/checklist" className="rounded-xl bg-accent-bg px-[1.4em] py-[0.85em] font-semibold text-white transition-colors hover:bg-accent-bg-hov">
+              Открыть чек-лист →
+            </Link>
           </div>
         </Wrap>
       </section>

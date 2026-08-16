@@ -7,6 +7,7 @@ import Landing from './pages/Landing'
 import Glossary from './pages/Glossary'
 import Quiz from './pages/Quiz'
 import Game from './pages/Game'
+import Checklist from './pages/Checklist'
 
 // при переходе на новую страницу — прокрутка наверх
 function ScrollToTop() {
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/glossary" element={<Glossary />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/game" element={<Game />} />
+        <Route path="/checklist" element={<Checklist />} />
       </Routes>
       <Footer />
       <ChatWidget />

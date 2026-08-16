@@ -9,6 +9,9 @@ export default function Footer() {
           <Link to="/glossary" className="underline decoration-line-strong underline-offset-4 hover:text-ink">
             Глоссарий
           </Link>
+          <Link to="/checklist" className="underline decoration-line-strong underline-offset-4 hover:text-ink">
+            Чек-лист
+          </Link>
         </div>
         <div className="rounded-full border border-line px-[0.9em] py-[0.3em] font-mono text-[0.72rem]">
           vibe-coded · React + Vite + Tailwind
