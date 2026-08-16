@@ -55,25 +55,63 @@ export default function Landing() {
   const [toast, setToast] = useState(false)
   const [copied, setCopied] = useState(false)
   const [sending, setSending] = useState(false)
+  const [fields, setFields] = useState({ name: '', email: '', phone: '' })
+  const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({})
 
-  const submit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  // русская маска: +7 (900) 000-00-00
+  const formatPhone = (v: string) => {
+    let d = v.replace(/\D/g, '')
+    if (d[0] === '8') d = '7' + d.slice(1)
+    else if (d[0] === '9') d = '7' + d
+    d = d.slice(0, 11)
+    if (!d) return ''
+    let r = '+7'
+    if (d.length > 1) r += ' (' + d.slice(1, 4)
+    if (d.length >= 4) r += ') ' + d.slice(4, 7)
+    if (d.length >= 7) r += '-' + d.slice(7, 9)
+    if (d.length >= 9) r += '-' + d.slice(9, 11)
+    return r
+  }
+
+  const setField = (k: 'name' | 'email' | 'phone', v: string) => {
+    setFields((f) => ({ ...f, [k]: k === 'phone' ? formatPhone(v) : v }))
+    setErrors((e) => ({ ...e, [k]: undefined }))
+  }
+
+  const validate = () => {
+    const e: { name?: string; email?: string; phone?: string } = {}
+    const name = fields.name.trim()
+    if (!name) e.name = 'Введите имя'
+    else if (!/^[A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё\s-]{1,39}$/.test(name)) e.name = 'Имя: 2–40 букв, без цифр'
+    const email = fields.email.trim()
+    if (!email) e.email = 'Введите e-mail'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) e.email = 'Проверьте e-mail'
+    const digits = fields.phone.replace(/\D/g, '')
+    if (!digits) e.phone = 'Введите телефон'
+    else if (digits.length !== 11) e.phone = 'Введите полный номер: +7 (___) ___-__-__'
+    return e
+  }
+
+  const submit = async (ev: FormEvent<HTMLFormElement>) => {
+    ev.preventDefault()
     if (sending) return // защита от повторной отправки по двойному клику
-    const form = e.currentTarget
-    const name = (form.elements.namedItem('name') as HTMLInputElement).value.trim()
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim()
-    if (!name || !email || !email.includes('@')) {
-      ;(name ? (form.elements.namedItem('email') as HTMLInputElement) : (form.elements.namedItem('name') as HTMLInputElement)).focus()
+    const errs = validate()
+    if (Object.keys(errs).length) {
+      setErrors(errs)
       return
     }
     setSending(true)
     try {
       if (FORMSPREE_ENDPOINT) {
-        const res = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData(form) })
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: 'POST',
+          headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify(fields),
+        })
         if (!res.ok) throw new Error('bad status')
       }
       setToast(true)
-      form.reset()
+      setFields({ name: '', email: '', phone: '' })
       setTimeout(() => setToast(false), 3200)
     } catch {
       alert('Не удалось отправить заявку. Попробуйте позже.')
@@ -307,22 +345,31 @@ export default function Landing() {
               </ul>
             </div>
             <form onSubmit={submit} noValidate className="flex flex-col gap-3.5">
-              {[
-                ['name', 'Имя', 'text', 'Как к вам обращаться'],
-                ['email', 'E-mail', 'email', 'you@company.ru'],
-                ['phone', 'Телефон', 'tel', '+7 900 000-00-00'],
-              ].map(([name, label, type, ph]) => (
-                <div key={name}>
-                  <label htmlFor={name} className="mb-1.5 block font-mono text-[0.8rem] uppercase tracking-[0.04em] text-panel-soft">
+              {([
+                ['name', 'Имя', 'text', 'Как к вам обращаться', 40] as const,
+                ['email', 'E-mail', 'email', 'you@company.ru', 60] as const,
+                ['phone', 'Телефон', 'tel', '+7 (900) 000-00-00', 18] as const,
+              ]).map(([key, label, type, ph, max]) => (
+                <div key={key}>
+                  <label htmlFor={key} className="mb-1.5 block font-mono text-[0.8rem] uppercase tracking-[0.04em] text-panel-soft">
                     {label}
                   </label>
                   <input
-                    id={name}
-                    name={name}
+                    id={key}
+                    name={key}
                     type={type}
+                    inputMode={key === 'phone' ? 'tel' : key === 'email' ? 'email' : 'text'}
+                    autoComplete={key}
+                    maxLength={max}
                     placeholder={ph}
-                    className="w-full rounded-[11px] border border-panel-line bg-[#0A0D12] px-4 py-[0.85em] text-[1rem] text-panel-ink placeholder:text-[#5c6672] focus:border-accent focus:outline-none"
+                    value={fields[key]}
+                    onChange={(e) => setField(key, e.target.value)}
+                    aria-invalid={!!errors[key]}
+                    className={`w-full rounded-[11px] border bg-[#0A0D12] px-4 py-[0.85em] text-[1rem] text-panel-ink placeholder:text-[#5c6672] focus:border-accent focus:outline-none ${
+                      errors[key] ? 'border-[#FF6A73]' : 'border-panel-line'
+                    }`}
                   />
+                  {errors[key] && <p className="mt-1 text-[0.76rem] text-[#FF6A73]">{errors[key]}</p>}
                 </div>
               ))}
               <button type="submit" disabled={sending} className="mt-1.5 rounded-xl bg-accent-bg p-[1em] text-center text-[1.02rem] font-semibold text-white transition-colors hover:bg-accent-bg-hov disabled:opacity-60">
@@ -345,7 +392,7 @@ export default function Landing() {
         }`}
         role="status"
       >
-        Заявка отправлена — мы на связи! (демо)
+        {FORMSPREE_ENDPOINT ? 'Заявка отправлена — мы на связи!' : 'Заявка отправлена (демо-режим)'}
       </div>
     </main>
   )
