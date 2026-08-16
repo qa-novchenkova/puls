@@ -42,7 +42,7 @@ export default function PulseMonitor() {
       return mid
     }
 
-    const frame = () => {
+    const draw = () => {
       const { width: w, height: h } = rect
       ctx.clearRect(0, 0, w, h)
       ctx.strokeStyle = 'rgba(255,255,255,0.05)'
@@ -68,14 +68,20 @@ export default function PulseMonitor() {
       }
       ctx.stroke()
       ctx.shadowBlur = 0
-      if (!reduce) {
-        off += 1.6
-        raf = requestAnimationFrame(frame)
-      }
     }
 
-    if (reduce) frame()
-    else raf = requestAnimationFrame(frame)
+    // скорость привязана ко времени (px/сек) — плавно при любой частоте кадров
+    let last = performance.now()
+    const loop = (t: number) => {
+      const dt = Math.min(50, t - last)
+      last = t
+      off += dt * 0.09
+      draw()
+      raf = requestAnimationFrame(loop)
+    }
+
+    if (reduce) draw()
+    else raf = requestAnimationFrame(loop)
 
     return () => {
       window.removeEventListener('resize', fit)
