@@ -53,7 +53,7 @@ export default function Glossary() {
     <main className="mx-auto max-w-[1280px] px-6 py-12">
       <div className="max-w-[60ch]">
         <span className="font-mono text-[0.74rem] font-semibold uppercase tracking-[0.16em] text-accent">
-          Словарь клиента
+          Словарь
         </span>
         <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3rem)] font-extrabold leading-[1.03] tracking-[-0.03em] text-balance">
           Понятным языком об автоматизации
