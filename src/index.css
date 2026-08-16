@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Дизайн-система «Пульс»
+   Семантические токены заданы в @theme → Tailwind генерит утилиты
+   (bg-surface, text-ink, border-line, text-accent, font-display …).
+   Значения переопределяются под тему ниже — утилиты остаются те же.
+   ============================================================ */
+@theme {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Helvetica Neue", "Segoe UI", system-ui, Arial, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", ui-monospace, Consolas, monospace;
+
+  --color-bg: #EAEDF1;
+  --color-surface: #FFFFFF;
+  --color-panel: #0F1319;
+  --color-ink: #13171D;
+  --color-ink-soft: #535C67;
+  --color-ink-mute: #828C97;
+  --color-line: #DBE0E7;
+  --color-line-strong: #C7CED6;
+  --color-accent: #FF4B57;
+  --color-accent-bg: #D62B3A;
+  --color-accent-bg-hov: #BC2231;
+  --color-mint: #0FA36B;
+  --color-panel-ink: #EEF1F5;
+  --color-panel-soft: #9BA6B2;
+  --color-panel-line: #242C36;
+
+  --radius-xl2: 26px;
+}
+
+/* Тёмная тема по системной настройке … */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0B0E12;
+    --color-surface: #141920;
+    --color-panel: #141920;
+    --color-ink: #EDF1F5;
+    --color-ink-soft: #A7B1BC;
+    --color-ink-mute: #727C87;
+    --color-line: #232A33;
+    --color-line-strong: #303945;
+    --color-accent: #FF5C67;
+    --color-accent-bg: #E23A47;
+    --color-accent-bg-hov: #C82C39;
+    --color-mint: #2DD4A0;
+    --color-panel-ink: #EDF1F5;
+    --color-panel-soft: #98A3AF;
+    --color-panel-line: #2A323D;
+  }
+}
+
+/* … и ручной переключатель (перебивает системную в обе стороны) */
+:root[data-theme="light"] {
+  --color-bg: #EAEDF1;
+  --color-surface: #FFFFFF;
+  --color-panel: #0F1319;
+  --color-ink: #13171D;
+  --color-ink-soft: #535C67;
+  --color-ink-mute: #828C97;
+  --color-line: #DBE0E7;
+  --color-line-strong: #C7CED6;
+  --color-accent: #FF4B57;
+  --color-accent-bg: #D62B3A;
+  --color-accent-bg-hov: #BC2231;
+  --color-mint: #0FA36B;
+  --color-panel-ink: #EEF1F5;
+  --color-panel-soft: #9BA6B2;
+  --color-panel-line: #242C36;
+}
+:root[data-theme="dark"] {
+  --color-bg: #0B0E12;
+  --color-surface: #141920;
+  --color-panel: #141920;
+  --color-ink: #EDF1F5;
+  --color-ink-soft: #A7B1BC;
+  --color-ink-mute: #727C87;
+  --color-line: #232A33;
+  --color-line-strong: #303945;
+  --color-accent: #FF5C67;
+  --color-accent-bg: #E23A47;
+  --color-accent-bg-hov: #C82C39;
+  --color-mint: #2DD4A0;
+  --color-panel-ink: #EDF1F5;
+  --color-panel-soft: #98A3AF;
+  --color-panel-line: #2A323D;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* якоря не прячутся под липкую шапку */
+[id] { scroll-margin-top: 88px; }
+
+/* пульсирующая точка «online» */
+@keyframes beat {
+  0%   { box-shadow: 0 0 0 0 rgba(255,75,87,0.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(255,75,87,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,75,87,0); }
+}
+.beat { animation: beat 1.6s infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
+}
