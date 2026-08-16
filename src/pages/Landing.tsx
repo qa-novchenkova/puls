@@ -49,14 +49,16 @@ const BASE = import.meta.env.BASE_URL
 // Регистрация ~2 минуты на formspree.io → создать форму → скопировать адрес
 // вида https://formspree.io/f/abcdwxyz и вставить в кавычки ниже.
 // Пока строка пустая — форма работает в демо-режиме (показывает подтверждение, но не шлёт).
-const FORMSPREE_ENDPOINT = ''
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mgawljqr'
 
 export default function Landing() {
   const [toast, setToast] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [sending, setSending] = useState(false)
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (sending) return // защита от повторной отправки по двойному клику
     const form = e.currentTarget
     const name = (form.elements.namedItem('name') as HTMLInputElement).value.trim()
     const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim()
@@ -64,18 +66,20 @@ export default function Landing() {
       ;(name ? (form.elements.namedItem('email') as HTMLInputElement) : (form.elements.namedItem('name') as HTMLInputElement)).focus()
       return
     }
-    if (FORMSPREE_ENDPOINT) {
-      try {
+    setSending(true)
+    try {
+      if (FORMSPREE_ENDPOINT) {
         const res = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData(form) })
         if (!res.ok) throw new Error('bad status')
-      } catch {
-        alert('Не удалось отправить заявку. Попробуйте позже.')
-        return
       }
+      setToast(true)
+      form.reset()
+      setTimeout(() => setToast(false), 3200)
+    } catch {
+      alert('Не удалось отправить заявку. Попробуйте позже.')
+    } finally {
+      setSending(false)
     }
-    setToast(true)
-    form.reset()
-    setTimeout(() => setToast(false), 3200)
   }
 
   const deckUrl = typeof window !== 'undefined' ? window.location.origin + BASE + 'presentation.html' : ''
@@ -243,8 +247,8 @@ export default function Landing() {
                 <a href={`${BASE}presentation.html`} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-panel-line px-[1.3em] py-[0.8em] font-semibold text-panel-ink transition-colors hover:border-panel-soft">
                   Открыть онлайн ↗
                 </a>
-                <button onClick={shareDeck} className="rounded-xl border border-panel-line px-[1.3em] py-[0.8em] font-semibold text-panel-ink transition-colors hover:border-panel-soft">
-                  {copied ? '✓ Ссылка скопирована' : 'Поделиться'}
+                <button onClick={shareDeck} className="min-w-[172px] whitespace-nowrap rounded-xl border border-panel-line px-[1.3em] py-[0.8em] text-center font-semibold text-panel-ink transition-colors hover:border-panel-soft">
+                  {copied ? '✓ Скопировано' : 'Поделиться'}
                 </button>
               </div>
             </div>
@@ -321,8 +325,8 @@ export default function Landing() {
                   />
                 </div>
               ))}
-              <button type="submit" className="mt-1.5 rounded-xl bg-accent-bg p-[1em] text-center text-[1.02rem] font-semibold text-white transition-colors hover:bg-accent-bg-hov">
-                Получить доступ
+              <button type="submit" disabled={sending} className="mt-1.5 rounded-xl bg-accent-bg p-[1em] text-center text-[1.02rem] font-semibold text-white transition-colors hover:bg-accent-bg-hov disabled:opacity-60">
+                {sending ? 'Отправляем…' : 'Получить доступ'}
               </button>
               <p className="text-center text-[0.78rem] text-panel-soft">
                 {FORMSPREE_ENDPOINT

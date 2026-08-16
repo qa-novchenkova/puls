@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Пульс — Как автоматизировать продажи</title>
 <style>
   :root{
@@ -14,82 +15,97 @@
   body{font-family:var(--sans);background:#05070a;overflow:hidden}
   .deck{position:relative;width:100vw;height:100vh}
   .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
-    padding:min(7vh,64px) min(7vw,90px);opacity:0;transition:opacity .35s ease}
-  .slide.active{display:flex;opacity:1}
+    padding:clamp(56px,8vh,80px) clamp(28px,7vw,90px);opacity:0;transition:opacity .35s ease;overflow-y:auto}
+  .slide.active{display:flex;opacity:1;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
   .slide.dark{background:var(--ink);color:#fff}
   .slide.paper{background:var(--paper);color:var(--text)}
   .slide.white{background:var(--white);color:var(--text)}
-  .eyebrow{font-family:var(--mono);font-size:clamp(.6rem,1vw,.78rem);font-weight:700;
+  .eyebrow{font-family:var(--mono);font-size:clamp(.62rem,1vw,.78rem);font-weight:700;
     letter-spacing:.18em;text-transform:uppercase;color:var(--coral)}
-  h1{font-size:clamp(2rem,6vw,4.6rem);font-weight:800;letter-spacing:-.03em;line-height:1;margin:.35em 0}
-  h2{font-size:clamp(1.5rem,3.8vw,2.8rem);font-weight:800;letter-spacing:-.02em;line-height:1.05}
-  .sub{font-size:clamp(1rem,1.7vw,1.25rem);color:var(--soft);margin-top:.7em;max-width:36ch}
+  h1{font-size:clamp(2rem,6vw,4.4rem);font-weight:800;letter-spacing:-.03em;line-height:1;margin:.35em 0}
+  h2{font-size:clamp(1.5rem,3.8vw,2.7rem);font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .sub{font-size:clamp(1rem,1.7vw,1.25rem);color:var(--soft);margin-top:.7em;max-width:40ch}
   .paper .sub,.white .sub{color:var(--mute)}
-  .wm{display:flex;align-items:center;gap:.5em;font-size:.8rem;font-weight:700;letter-spacing:.2em;
-    color:var(--soft);font-family:var(--mono)}
-  .wm b{color:var(--coral)}
-  .grid{display:grid;gap:clamp(12px,1.6vw,20px);margin-top:clamp(20px,4vh,44px)}
+  /* логотип на всех слайдах, кликабельный */
+  .logo{position:fixed;top:20px;left:clamp(20px,4vw,40px);z-index:40;display:flex;align-items:center;gap:.5em;
+    font-family:var(--mono);font-weight:700;letter-spacing:.2em;font-size:.8rem;text-decoration:none;
+    color:var(--soft);transition:color .3s,opacity .2s}
+  .logo:hover{opacity:.75}
+  .logo .hb{color:var(--coral);letter-spacing:0}
+  .logo.onlight{color:#3a434e}
+  .grid{display:grid;gap:clamp(12px,1.6vw,20px);margin-top:clamp(20px,4vh,40px)}
   .g3{grid-template-columns:repeat(3,1fr)}
   .g2{grid-template-columns:repeat(2,1fr)}
-  .card{border-radius:16px;padding:clamp(16px,2vw,28px)}
-  .paper .card,.white .card{background:var(--white);border:1px solid var(--line)}
-  .white .card{background:var(--paper)}
+  .card{border-radius:16px;padding:clamp(16px,2vw,26px)}
+  .paper .card{background:var(--white);border:1px solid var(--line)}
+  .white .card{background:var(--paper);border:1px solid var(--line)}
   .dark .card{background:var(--ink2);border:1px solid var(--line-d)}
   .stat{font-size:clamp(2.4rem,5vw,3.8rem);font-weight:800;color:var(--coral);letter-spacing:-.03em;line-height:1}
-  .stat-l{margin-top:.6em;font-size:clamp(.85rem,1.3vw,1rem)}
-  .paper .stat-l{color:var(--text)}
-  .row{display:flex;gap:1em;align-items:flex-start;padding:clamp(10px,1.5vh,16px) 0}
-  .ic{flex:none;width:clamp(40px,4vw,52px);height:clamp(40px,4vw,52px);border-radius:50%;
+  .stat-l{margin-top:.6em;font-size:clamp(.85rem,1.3vw,1rem);color:var(--text)}
+  /* единые иконки */
+  .ic{flex:none;width:clamp(42px,4vw,54px);height:clamp(42px,4vw,54px);border-radius:50%;
     display:grid;place-items:center;background:#FFECEE;color:var(--coral-d)}
+  .ic svg{width:52%;height:52%}
+  .rows{margin-top:2vh}
+  .row{display:flex;gap:1em;align-items:flex-start;padding:clamp(9px,1.4vh,15px) 0}
   .row h3,.card h3{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:700;letter-spacing:-.01em}
   .row p,.card p{color:var(--mute);font-size:clamp(.85rem,1.3vw,1rem);margin-top:.25em}
   .dark .card p{color:var(--soft)}
   .num{font-family:var(--mono);font-size:.9rem;font-weight:700;color:var(--coral)}
-  .chain{display:flex;align-items:stretch;justify-content:center;gap:.5vw;flex-wrap:wrap;margin-top:5vh}
+  .chain{display:flex;align-items:stretch;justify-content:center;gap:.6vw;margin-top:5vh;flex-wrap:wrap}
   .chain .box{background:var(--ink2);border:1px solid rgba(255,75,87,.4);border-radius:12px;
-    padding:1.2em .8em;min-width:8.5vw;text-align:center;font-weight:700;font-size:clamp(.8rem,1.2vw,1rem);
+    padding:1.1em .8em;min-width:8.5vw;text-align:center;font-weight:700;font-size:clamp(.8rem,1.15vw,1rem);
     display:flex;align-items:center;justify-content:center}
   .chain .arr{display:flex;align-items:center;color:var(--coral);font-size:1.4rem}
   .steprow{display:flex;gap:1em;align-items:center;background:var(--white);border:1px solid var(--line);
-    border-radius:14px;padding:clamp(14px,2vh,20px) clamp(16px,2vw,26px);margin-top:14px}
+    border-radius:14px;padding:clamp(13px,2vh,20px) clamp(16px,2vw,26px);margin-top:14px}
   .steprow .dot{flex:none;width:clamp(34px,3.4vw,44px);height:clamp(34px,3.4vw,44px);border-radius:50%;
     background:var(--coral-d);color:#fff;display:grid;place-items:center;font-weight:800}
-  .bars{display:flex;align-items:flex-end;gap:2vw;height:38vh;margin-top:2vh}
-  .bar{width:9vw;border-radius:8px 8px 0 0;position:relative;display:flex;justify-content:center}
-  .bar span{position:absolute;top:-1.6em;font-weight:800;font-size:clamp(1rem,1.6vw,1.3rem)}
-  .bar small{position:absolute;bottom:-1.8em;color:var(--mute);font-size:clamp(.8rem,1.1vw,.95rem)}
-  .cta{display:inline-flex;align-items:center;gap:1em;margin-top:5vh}
+  /* слайд 8 */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,60px);align-items:center;margin-top:3vh}
+  .metric{display:flex;align-items:baseline;gap:.7em;margin:.5em 0}
+  .metric b{font-size:clamp(1.8rem,3.5vw,2.8rem);color:var(--coral);font-weight:800;letter-spacing:-.02em}
+  .chart-title{font-family:var(--mono);font-size:clamp(.78rem,1.1vw,.9rem);color:var(--mute);
+    text-align:center;margin-bottom:clamp(14px,2.5vh,26px)}
+  .bars{display:flex;align-items:flex-end;justify-content:center;gap:clamp(24px,3vw,48px);height:clamp(160px,30vh,300px)}
+  .barcol{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+  .barcol .val{font-weight:800;font-size:clamp(1rem,1.6vw,1.35rem);margin-bottom:.35em}
+  .barcol .bar{width:clamp(64px,8vw,120px);border-radius:8px 8px 0 0}
+  .barcol small{margin-top:.7em;color:var(--mute);font-size:clamp(.8rem,1.1vw,.95rem)}
+  .cta{display:flex;align-items:center;gap:1em;margin-top:5vh;flex-wrap:wrap}
   .cta .btn{background:var(--coral-d);color:#fff;font-weight:700;padding:.8em 1.5em;border-radius:12px;
     font-size:clamp(.9rem,1.3vw,1.05rem)}
   .cta .url{color:var(--mute);font-size:clamp(.85rem,1.2vw,1rem)}
-  .pulse{position:absolute;left:0;width:100%;overflow:hidden;pointer-events:none}
-  .flow{display:flex;gap:1em;align-items:center;justify-content:center;margin-top:4vh;flex-wrap:wrap}
-  .flow .f{background:var(--ink2);border:1px solid var(--line-d);border-radius:14px;padding:1.4em 1em;
-    min-width:15vw;flex:1}
-  .flow .arr{color:var(--coral);font-size:1.6rem}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:center;margin-top:3vh}
-  .metric{display:flex;align-items:baseline;gap:.7em;margin:.5em 0}
-  .metric b{font-size:clamp(1.8rem,3.5vw,2.8rem);color:var(--coral);font-weight:800;letter-spacing:-.02em}
+  .pulsewrap{width:100%;margin:clamp(24px,5vh,52px) 0;line-height:0}
   /* controls */
-  .ctrl{position:fixed;bottom:18px;right:22px;display:flex;align-items:center;gap:10px;z-index:20;
+  .ctrl{position:fixed;bottom:16px;right:20px;display:flex;align-items:center;gap:10px;z-index:40;
     font-family:var(--mono);font-size:.85rem;color:#8892a0}
   .ctrl button{width:40px;height:40px;border-radius:10px;border:1px solid #2a333d;background:#11161d;
     color:#e6ebf1;font-size:1.1rem;cursor:pointer;transition:.15s}
   .ctrl button:hover{border-color:var(--coral);color:var(--coral)}
-  .bardim{position:fixed;bottom:0;left:0;height:3px;background:var(--coral);z-index:20;transition:width .35s}
-  @media (max-width:700px){.g3,.g2,.two{grid-template-columns:1fr}.chain .box{min-width:40vw}}
+  .bardim{position:fixed;bottom:0;left:0;height:3px;background:var(--coral);z-index:40;transition:width .35s}
+  @media (max-width:760px){
+    .slide{justify-content:flex-start;padding-top:66px}
+    .g3,.g2,.two{grid-template-columns:1fr}
+    .chain{flex-direction:column;align-items:stretch}
+    .chain .box{min-width:0}
+    .chain .arr{transform:rotate(90deg);justify-content:center}
+    .cta{flex-direction:column;align-items:flex-start}
+  }
 </style>
+
+<a class="logo" id="logo" href="https://qa-novchenkova.github.io/puls/" aria-label="На главную сайта"><span class="hb">❤</span> ПУЛЬС</a>
 
 <div class="deck" id="deck">
 
   <!-- 1 -->
   <section class="slide dark active">
-    <div class="pulse" id="p1" style="top:26%"></div>
-    <div style="position:absolute;top:min(7vh,64px)"><div class="wm">❤&nbsp;<b>ПУЛЬС</b></div></div>
     <div class="eyebrow">Гайд для малого бизнеса</div>
     <h1>Как автоматизировать<br>продажи</h1>
     <p class="sub" style="max-width:44ch">Как отдать рутину роботу и заниматься ростом, а не операционкой.</p>
-    <div style="position:absolute;bottom:min(7vh,64px);color:var(--mute);font-size:.9rem">Пульс · платформа автоматизации</div>
+    <div class="pulsewrap" id="p1"></div>
+    <div style="color:var(--mute);font-size:.9rem">Пульс · платформа автоматизации</div>
   </section>
 
   <!-- 2 -->
@@ -108,11 +124,11 @@
   <section class="slide white">
     <div class="eyebrow">Цена бездействия</div>
     <h2>Где именно теряется выручка</h2>
-    <div style="margin-top:2vh">
-      <div class="row"><span class="ic">⏱</span><div><h3>Лид ждёт ответа</h3><p>Клиент написал утром — менеджер увидел в обед. Половина уходит к конкуренту.</p></div></div>
-      <div class="row"><span class="ic">🔁</span><div><h3>Забытые follow-up</h3><p>«Перезвоню завтра» превращается в никогда. Тёплые клиенты остывают.</p></div></div>
-      <div class="row"><span class="ic">📄</span><div><h3>Документы вручную</h3><p>Каждый счёт и акт — заново шаблон, реквизиты, отправка. И так по кругу.</p></div></div>
-      <div class="row"><span class="ic">📊</span><div><h3>Решения вслепую</h3><p>Цифры в трёх таблицах, сводить некогда. Непонятно, что приносит деньги.</p></div></div>
+    <div class="rows">
+      <div class="row"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><h3>Лид ждёт ответа</h3><p>Клиент написал утром — менеджер увидел в обед. Половина уходит к конкуренту.</p></div></div>
+      <div class="row"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 9a8 8 0 0113-3l3 3M20 15a8 8 0 01-13 3l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 3v6h-6M4 21v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h3>Забытые follow-up</h3><p>«Перезвоню завтра» превращается в никогда. Тёплые клиенты остывают.</p></div></div>
+      <div class="row"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h9l3 3v15H6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12h6M9 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><h3>Документы вручную</h3><p>Каждый счёт и акт — заново шаблон, реквизиты, отправка. И так по кругу.</p></div></div>
+      <div class="row"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><h3>Решения вслепую</h3><p>Цифры в трёх таблицах, сводить некогда. Непонятно, что приносит деньги.</p></div></div>
     </div>
   </section>
 
@@ -143,12 +159,12 @@
     <div class="eyebrow">Возможности</div>
     <h2>Один инструмент вместо десятка вкладок</h2>
     <div class="grid g3">
-      <div class="card"><span class="ic">💬</span><h3 style="margin-top:.7em">Заявки со всех каналов</h3><p>Сайт, мессенджеры, звонки — в одну ленту.</p></div>
-      <div class="card"><span class="ic">📄</span><h3 style="margin-top:.7em">Счета и документы</h3><p>По шаблону за секунду, с автоотправкой.</p></div>
-      <div class="card"><span class="ic">⏰</span><h3 style="margin-top:.7em">Напоминания и follow-up</h3><p>Ни один клиент не забыт.</p></div>
-      <div class="card"><span class="ic">📈</span><h3 style="margin-top:.7em">Отчёты в реальном времени</h3><p>Выручка и воронка на одном экране.</p></div>
-      <div class="card"><span class="ic">✉️</span><h3 style="margin-top:.7em">Рассылки и повторные продажи</h3><p>Тёплая база возвращается сама.</p></div>
-      <div class="card"><span class="ic">✅</span><h3 style="margin-top:.7em">Задачи для команды</h3><p>Сценарий ставит задачи и следит за сроками.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 9.5h8M8 12.5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><h3 style="margin-top:.7em">Заявки со всех каналов</h3><p>Сайт, мессенджеры, звонки — в одну ленту.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h9l3 3v15H6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12h6M9 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><h3 style="margin-top:.7em">Счета и документы</h3><p>По шаблону за секунду, с автоотправкой.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20a2 2 0 004 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><h3 style="margin-top:.7em">Напоминания и follow-up</h3><p>Ни один клиент не забыт.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><h3 style="margin-top:.7em">Отчёты в реальном времени</h3><p>Выручка и воронка на одном экране.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 7l9 6 9-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><h3 style="margin-top:.7em">Рассылки и повторные продажи</h3><p>Тёплая база возвращается сама.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 12l3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3 style="margin-top:.7em">Задачи для команды</h3><p>Сценарий ставит задачи и следит за сроками.</p></div>
     </div>
   </section>
 
@@ -177,10 +193,10 @@
         <div class="metric"><b>+18%</b><span>к повторным продажам</span></div>
       </div>
       <div>
-        <div style="font-family:var(--mono);font-size:.85rem;color:var(--mute);text-align:center">Часы рутины в неделю</div>
-        <div class="bars" style="justify-content:center">
-          <div class="bar" style="height:100%;background:var(--coral)"><span>15</span><small>Было</small></div>
-          <div class="bar" style="height:27%;background:var(--mint)"><span>4</span><small>Стало</small></div>
+        <div class="chart-title">Часы рутины в неделю</div>
+        <div class="bars">
+          <div class="barcol"><span class="val">15</span><div class="bar" style="height:75%;background:var(--coral)"></div><small>Было</small></div>
+          <div class="barcol"><span class="val">4</span><div class="bar" style="height:20%;background:var(--mint)"></div><small>Стало</small></div>
         </div>
       </div>
     </div>
@@ -200,11 +216,10 @@
 
   <!-- 10 -->
   <section class="slide dark">
-    <div style="position:absolute;top:min(7vh,64px)"><div class="wm">❤&nbsp;<b>ПУЛЬС</b></div></div>
     <h1 style="font-size:clamp(2rem,5.2vw,4rem)">Соберите первый<br>автопилот сегодня</h1>
     <p class="sub" style="max-width:40ch">Меньше рутины — больше продаж. Пульс берёт операционку на себя.</p>
-    <div class="cta"><span class="btn">Подключить бесплатно</span><span class="url">qa-novchenkova.github.io/puls</span></div>
-    <div class="pulse" id="p10" style="bottom:8%"></div>
+    <div class="cta"><a class="btn" href="https://qa-novchenkova.github.io/puls/">Подключить бесплатно</a><span class="url">qa-novchenkova.github.io/puls</span></div>
+    <div class="pulsewrap" id="p10"></div>
   </section>
 
 </div>
@@ -218,26 +233,30 @@
 
 <script>
   var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var logo=document.getElementById('logo');
   var i=0;
   function pulseSVG(w){
-    var cells=Math.max(4,Math.round(w/150)),cw=w/cells,pts=[],cell=[[0,0],[.34,0],[.4,-14],[.46,10],[.5,-40],[.56,20],[.62,0],[1,0]];
+    var cells=Math.max(3,Math.round(w/170)),cw=w/cells,pts=[],cell=[[0,0],[.34,0],[.4,-14],[.46,10],[.5,-40],[.56,20],[.62,0],[1,0]];
     for(var c=0;c<cells;c++)for(var k=0;k<cell.length;k++)pts.push([c*cw+cell[k][0]*cw,40+cell[k][1]]);
     var d='M'+pts.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(' L');
-    return '<svg width="'+w+'" height="80" viewBox="0 0 '+w+' 80"><path d="'+d+'" fill="none" stroke="#FF4B57" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>';
+    return '<svg width="'+w+'" height="80" viewBox="0 0 '+w+' 80" style="max-width:100%"><path d="'+d+'" fill="none" stroke="#FF4B57" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/></svg>';
   }
   function drawPulses(){
-    var w=window.innerWidth;
-    var a=document.getElementById('p1'),b=document.getElementById('p10');
-    if(a)a.innerHTML=pulseSVG(w); if(b)b.innerHTML=pulseSVG(w);
+    var el=document.querySelector('.slide.active .pulsewrap');
+    if(el&&!el.dataset.done){el.innerHTML=pulseSVG(Math.min(window.innerWidth-80,1100));}
   }
   function show(n){
     i=(n+slides.length)%slides.length;
     slides.forEach(function(s,k){s.classList.toggle('active',k===i)});
+    var light=slides[i].classList.contains('paper')||slides[i].classList.contains('white');
+    logo.classList.toggle('onlight',light);
     document.getElementById('counter').textContent=(i+1)+' / '+slides.length;
     document.getElementById('progress').style.width=((i+1)/slides.length*100)+'%';
+    slides[i].scrollTop=0;
+    drawPulses();
   }
-  document.getElementById('next').onclick=function(){show(i+1)};
-  document.getElementById('prev').onclick=function(){show(i-1)};
+  document.getElementById('next').onclick=function(e){e.stopPropagation();show(i+1)};
+  document.getElementById('prev').onclick=function(e){e.stopPropagation();show(i-1)};
   document.addEventListener('keydown',function(e){
     if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
     if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
@@ -247,6 +266,9 @@
     if(e.target.closest('.ctrl')||e.target.closest('a'))return;
     var x=e.clientX/window.innerWidth; show(x<0.28?i-1:i+1);
   });
-  window.addEventListener('resize',drawPulses);
-  drawPulses(); show(0);
+  window.addEventListener('resize',function(){
+    document.querySelectorAll('.pulsewrap').forEach(function(el){el.innerHTML='';});
+    drawPulses();
+  });
+  show(0);
 </script>
