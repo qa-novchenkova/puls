@@ -1,0 +1,252 @@
+<meta charset="utf-8">
+<title>Пульс — Как автоматизировать продажи</title>
+<style>
+  :root{
+    --ink:#0F1319; --ink2:#141B24; --line-d:#283039;
+    --paper:#F4F6F8; --white:#FFFFFF; --line:#DBE0E7;
+    --text:#15191F; --mute:#667080; --soft:#9BA6B2;
+    --coral:#FF4B57; --coral-d:#D62B3A; --mint:#0FA36B;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono","Cascadia Code",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);background:#05070a;overflow:hidden}
+  .deck{position:relative;width:100vw;height:100vh}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+    padding:min(7vh,64px) min(7vw,90px);opacity:0;transition:opacity .35s ease}
+  .slide.active{display:flex;opacity:1}
+  .slide.dark{background:var(--ink);color:#fff}
+  .slide.paper{background:var(--paper);color:var(--text)}
+  .slide.white{background:var(--white);color:var(--text)}
+  .eyebrow{font-family:var(--mono);font-size:clamp(.6rem,1vw,.78rem);font-weight:700;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--coral)}
+  h1{font-size:clamp(2rem,6vw,4.6rem);font-weight:800;letter-spacing:-.03em;line-height:1;margin:.35em 0}
+  h2{font-size:clamp(1.5rem,3.8vw,2.8rem);font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .sub{font-size:clamp(1rem,1.7vw,1.25rem);color:var(--soft);margin-top:.7em;max-width:36ch}
+  .paper .sub,.white .sub{color:var(--mute)}
+  .wm{display:flex;align-items:center;gap:.5em;font-size:.8rem;font-weight:700;letter-spacing:.2em;
+    color:var(--soft);font-family:var(--mono)}
+  .wm b{color:var(--coral)}
+  .grid{display:grid;gap:clamp(12px,1.6vw,20px);margin-top:clamp(20px,4vh,44px)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .card{border-radius:16px;padding:clamp(16px,2vw,28px)}
+  .paper .card,.white .card{background:var(--white);border:1px solid var(--line)}
+  .white .card{background:var(--paper)}
+  .dark .card{background:var(--ink2);border:1px solid var(--line-d)}
+  .stat{font-size:clamp(2.4rem,5vw,3.8rem);font-weight:800;color:var(--coral);letter-spacing:-.03em;line-height:1}
+  .stat-l{margin-top:.6em;font-size:clamp(.85rem,1.3vw,1rem)}
+  .paper .stat-l{color:var(--text)}
+  .row{display:flex;gap:1em;align-items:flex-start;padding:clamp(10px,1.5vh,16px) 0}
+  .ic{flex:none;width:clamp(40px,4vw,52px);height:clamp(40px,4vw,52px);border-radius:50%;
+    display:grid;place-items:center;background:#FFECEE;color:var(--coral-d)}
+  .row h3,.card h3{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:700;letter-spacing:-.01em}
+  .row p,.card p{color:var(--mute);font-size:clamp(.85rem,1.3vw,1rem);margin-top:.25em}
+  .dark .card p{color:var(--soft)}
+  .num{font-family:var(--mono);font-size:.9rem;font-weight:700;color:var(--coral)}
+  .chain{display:flex;align-items:stretch;justify-content:center;gap:.5vw;flex-wrap:wrap;margin-top:5vh}
+  .chain .box{background:var(--ink2);border:1px solid rgba(255,75,87,.4);border-radius:12px;
+    padding:1.2em .8em;min-width:8.5vw;text-align:center;font-weight:700;font-size:clamp(.8rem,1.2vw,1rem);
+    display:flex;align-items:center;justify-content:center}
+  .chain .arr{display:flex;align-items:center;color:var(--coral);font-size:1.4rem}
+  .steprow{display:flex;gap:1em;align-items:center;background:var(--white);border:1px solid var(--line);
+    border-radius:14px;padding:clamp(14px,2vh,20px) clamp(16px,2vw,26px);margin-top:14px}
+  .steprow .dot{flex:none;width:clamp(34px,3.4vw,44px);height:clamp(34px,3.4vw,44px);border-radius:50%;
+    background:var(--coral-d);color:#fff;display:grid;place-items:center;font-weight:800}
+  .bars{display:flex;align-items:flex-end;gap:2vw;height:38vh;margin-top:2vh}
+  .bar{width:9vw;border-radius:8px 8px 0 0;position:relative;display:flex;justify-content:center}
+  .bar span{position:absolute;top:-1.6em;font-weight:800;font-size:clamp(1rem,1.6vw,1.3rem)}
+  .bar small{position:absolute;bottom:-1.8em;color:var(--mute);font-size:clamp(.8rem,1.1vw,.95rem)}
+  .cta{display:inline-flex;align-items:center;gap:1em;margin-top:5vh}
+  .cta .btn{background:var(--coral-d);color:#fff;font-weight:700;padding:.8em 1.5em;border-radius:12px;
+    font-size:clamp(.9rem,1.3vw,1.05rem)}
+  .cta .url{color:var(--mute);font-size:clamp(.85rem,1.2vw,1rem)}
+  .pulse{position:absolute;left:0;width:100%;overflow:hidden;pointer-events:none}
+  .flow{display:flex;gap:1em;align-items:center;justify-content:center;margin-top:4vh;flex-wrap:wrap}
+  .flow .f{background:var(--ink2);border:1px solid var(--line-d);border-radius:14px;padding:1.4em 1em;
+    min-width:15vw;flex:1}
+  .flow .arr{color:var(--coral);font-size:1.6rem}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:center;margin-top:3vh}
+  .metric{display:flex;align-items:baseline;gap:.7em;margin:.5em 0}
+  .metric b{font-size:clamp(1.8rem,3.5vw,2.8rem);color:var(--coral);font-weight:800;letter-spacing:-.02em}
+  /* controls */
+  .ctrl{position:fixed;bottom:18px;right:22px;display:flex;align-items:center;gap:10px;z-index:20;
+    font-family:var(--mono);font-size:.85rem;color:#8892a0}
+  .ctrl button{width:40px;height:40px;border-radius:10px;border:1px solid #2a333d;background:#11161d;
+    color:#e6ebf1;font-size:1.1rem;cursor:pointer;transition:.15s}
+  .ctrl button:hover{border-color:var(--coral);color:var(--coral)}
+  .bardim{position:fixed;bottom:0;left:0;height:3px;background:var(--coral);z-index:20;transition:width .35s}
+  @media (max-width:700px){.g3,.g2,.two{grid-template-columns:1fr}.chain .box{min-width:40vw}}
+</style>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide dark active">
+    <div class="pulse" id="p1" style="top:26%"></div>
+    <div style="position:absolute;top:min(7vh,64px)"><div class="wm">❤&nbsp;<b>ПУЛЬС</b></div></div>
+    <div class="eyebrow">Гайд для малого бизнеса</div>
+    <h1>Как автоматизировать<br>продажи</h1>
+    <p class="sub" style="max-width:44ch">Как отдать рутину роботу и заниматься ростом, а не операционкой.</p>
+    <div style="position:absolute;bottom:min(7vh,64px);color:var(--mute);font-size:.9rem">Пульс · платформа автоматизации</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide paper">
+    <div class="eyebrow">Проблема</div>
+    <h2>Рутина крадёт день по кусочкам</h2>
+    <p class="sub">Пока заявки, счета и напоминания делаются вручную — деньги утекают в мелочах.</p>
+    <div class="grid g3">
+      <div class="card"><div class="stat">11 ч</div><div class="stat-l">в неделю уходит на ручную рутину</div></div>
+      <div class="card"><div class="stat">30%</div><div class="stat-l">продаж теряются из-за медленного ответа</div></div>
+      <div class="card"><div class="stat">4 ч</div><div class="stat-l">в неделю — только на счета и документы</div></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide white">
+    <div class="eyebrow">Цена бездействия</div>
+    <h2>Где именно теряется выручка</h2>
+    <div style="margin-top:2vh">
+      <div class="row"><span class="ic">⏱</span><div><h3>Лид ждёт ответа</h3><p>Клиент написал утром — менеджер увидел в обед. Половина уходит к конкуренту.</p></div></div>
+      <div class="row"><span class="ic">🔁</span><div><h3>Забытые follow-up</h3><p>«Перезвоню завтра» превращается в никогда. Тёплые клиенты остывают.</p></div></div>
+      <div class="row"><span class="ic">📄</span><div><h3>Документы вручную</h3><p>Каждый счёт и акт — заново шаблон, реквизиты, отправка. И так по кругу.</p></div></div>
+      <div class="row"><span class="ic">📊</span><div><h3>Решения вслепую</h3><p>Цифры в трёх таблицах, сводить некогда. Непонятно, что приносит деньги.</p></div></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide dark">
+    <div class="eyebrow">Простыми словами</div>
+    <h2>Автоматизация = идея → сценарий → автопилот</h2>
+    <div class="grid g3">
+      <div class="card"><div class="num">01</div><h3 style="font-size:clamp(1.3rem,2vw,1.7rem);margin:.3em 0">Идея</h3><p>Есть повторяющееся действие: ответить, выставить счёт, напомнить.</p></div>
+      <div class="card"><div class="num">02</div><h3 style="font-size:clamp(1.3rem,2vw,1.7rem);margin:.3em 0">Сценарий</h3><p>Описываем правило «если — то». Система знает, что делать.</p></div>
+      <div class="card"><div class="num">03</div><h3 style="font-size:clamp(1.3rem,2vw,1.7rem);margin:.3em 0">Автопилот</h3><p>Дальше всё происходит само, 24/7, без вашего участия.</p></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide paper">
+    <div class="eyebrow">Как это работает в Пульсе</div>
+    <h2>Три шага — и рутина работает сама</h2>
+    <div style="margin-top:2vh">
+      <div class="steprow"><span class="dot">1</span><div><h3>Опишите задачу словами</h3><p>«Когда приходит заявка — ответить, создать сделку и напомнить менеджеру».</p></div></div>
+      <div class="steprow"><span class="dot">2</span><div><h3>Подтвердите и подправьте</h3><p>Проверяете шаги, меняете тексты и условия под себя. Без кода.</p></div></div>
+      <div class="steprow"><span class="dot">3</span><div><h3>Включите — и забудьте</h3><p>Сценарий работает круглосуточно. Вы получаете результат, а не задачу.</p></div></div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide white">
+    <div class="eyebrow">Возможности</div>
+    <h2>Один инструмент вместо десятка вкладок</h2>
+    <div class="grid g3">
+      <div class="card"><span class="ic">💬</span><h3 style="margin-top:.7em">Заявки со всех каналов</h3><p>Сайт, мессенджеры, звонки — в одну ленту.</p></div>
+      <div class="card"><span class="ic">📄</span><h3 style="margin-top:.7em">Счета и документы</h3><p>По шаблону за секунду, с автоотправкой.</p></div>
+      <div class="card"><span class="ic">⏰</span><h3 style="margin-top:.7em">Напоминания и follow-up</h3><p>Ни один клиент не забыт.</p></div>
+      <div class="card"><span class="ic">📈</span><h3 style="margin-top:.7em">Отчёты в реальном времени</h3><p>Выручка и воронка на одном экране.</p></div>
+      <div class="card"><span class="ic">✉️</span><h3 style="margin-top:.7em">Рассылки и повторные продажи</h3><p>Тёплая база возвращается сама.</p></div>
+      <div class="card"><span class="ic">✅</span><h3 style="margin-top:.7em">Задачи для команды</h3><p>Сценарий ставит задачи и следит за сроками.</p></div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide dark">
+    <div class="eyebrow">ИИ-агент</div>
+    <h2>Не просто отвечает — выполняет цепочку действий</h2>
+    <div class="chain">
+      <div class="box">Принял<br>заявку</div><div class="arr">→</div>
+      <div class="box">Нашёл<br>данные</div><div class="arr">→</div>
+      <div class="box">Создал<br>сделку в CRM</div><div class="arr">→</div>
+      <div class="box">Поставил<br>задачу</div><div class="arr">→</div>
+      <div class="box">Позвал<br>человека</div>
+    </div>
+    <p class="sub" style="max-width:100%;text-align:center;margin-top:4vh">Отвечает по вашей базе знаний (RAG) — не выдумывает — и передаёт диалог оператору, когда нужно.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide white">
+    <div class="eyebrow">Результат за 30 дней</div>
+    <h2>Цифры, которые чувствует касса</h2>
+    <div class="two">
+      <div>
+        <div class="metric"><b>×2,4</b><span>скорость ответа лиду</span></div>
+        <div class="metric"><b>−73%</b><span>ручных операций</span></div>
+        <div class="metric"><b>+18%</b><span>к повторным продажам</span></div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:.85rem;color:var(--mute);text-align:center">Часы рутины в неделю</div>
+        <div class="bars" style="justify-content:center">
+          <div class="bar" style="height:100%;background:var(--coral)"><span>15</span><small>Было</small></div>
+          <div class="bar" style="height:27%;background:var(--mint)"><span>4</span><small>Стало</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide paper">
+    <div class="eyebrow">С чего начать</div>
+    <h2>Первый автопилот — за 6 минут</h2>
+    <div class="grid g2">
+      <div class="card" style="display:flex;gap:.8em;align-items:flex-start"><span style="width:14px;height:14px;border-radius:50%;background:var(--mint);flex:none;margin-top:.35em"></span><div><h3>Бесплатный старт</h3><p>Без карты и обязательств — подключаете и пробуете.</p></div></div>
+      <div class="card" style="display:flex;gap:.8em;align-items:flex-start"><span style="width:14px;height:14px;border-radius:50%;background:var(--mint);flex:none;margin-top:.35em"></span><div><h3>Перенос данных</h3><p>Заявки и контакты из таблиц и CRM переезжают сами.</p></div></div>
+      <div class="card" style="display:flex;gap:.8em;align-items:flex-start"><span style="width:14px;height:14px;border-radius:50%;background:var(--mint);flex:none;margin-top:.35em"></span><div><h3>Первый сценарий</h3><p>Настраиваете одно правило — и видите эффект сразу.</p></div></div>
+      <div class="card" style="display:flex;gap:.8em;align-items:flex-start"><span style="width:14px;height:14px;border-radius:50%;background:var(--mint);flex:none;margin-top:.35em"></span><div><h3>Живой специалист</h3><p>Помогаем на запуске, если что-то непонятно.</p></div></div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide dark">
+    <div style="position:absolute;top:min(7vh,64px)"><div class="wm">❤&nbsp;<b>ПУЛЬС</b></div></div>
+    <h1 style="font-size:clamp(2rem,5.2vw,4rem)">Соберите первый<br>автопилот сегодня</h1>
+    <p class="sub" style="max-width:40ch">Меньше рутины — больше продаж. Пульс берёт операционку на себя.</p>
+    <div class="cta"><span class="btn">Подключить бесплатно</span><span class="url">qa-novchenkova.github.io/puls</span></div>
+    <div class="pulse" id="p10" style="bottom:8%"></div>
+  </section>
+
+</div>
+
+<div class="bardim" id="progress"></div>
+<div class="ctrl">
+  <button id="prev" aria-label="Назад">‹</button>
+  <span id="counter">1 / 10</span>
+  <button id="next" aria-label="Вперёд">›</button>
+</div>
+
+<script>
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var i=0;
+  function pulseSVG(w){
+    var cells=Math.max(4,Math.round(w/150)),cw=w/cells,pts=[],cell=[[0,0],[.34,0],[.4,-14],[.46,10],[.5,-40],[.56,20],[.62,0],[1,0]];
+    for(var c=0;c<cells;c++)for(var k=0;k<cell.length;k++)pts.push([c*cw+cell[k][0]*cw,40+cell[k][1]]);
+    var d='M'+pts.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(' L');
+    return '<svg width="'+w+'" height="80" viewBox="0 0 '+w+' 80"><path d="'+d+'" fill="none" stroke="#FF4B57" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>';
+  }
+  function drawPulses(){
+    var w=window.innerWidth;
+    var a=document.getElementById('p1'),b=document.getElementById('p10');
+    if(a)a.innerHTML=pulseSVG(w); if(b)b.innerHTML=pulseSVG(w);
+  }
+  function show(n){
+    i=(n+slides.length)%slides.length;
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i)});
+    document.getElementById('counter').textContent=(i+1)+' / '+slides.length;
+    document.getElementById('progress').style.width=((i+1)/slides.length*100)+'%';
+  }
+  document.getElementById('next').onclick=function(){show(i+1)};
+  document.getElementById('prev').onclick=function(){show(i-1)};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
+    if(e.key==='Home')show(0); if(e.key==='End')show(slides.length-1);
+  });
+  document.getElementById('deck').addEventListener('click',function(e){
+    if(e.target.closest('.ctrl')||e.target.closest('a'))return;
+    var x=e.clientX/window.innerWidth; show(x<0.28?i-1:i+1);
+  });
+  window.addEventListener('resize',drawPulses);
+  drawPulses(); show(0);
+</script>

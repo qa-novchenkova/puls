@@ -43,10 +43,19 @@ const features = [
   { h: 'Задачи для команды', p: 'Сценарий ставит задачи сам и следит за сроками. Никто ничего не теряет.', d: 'M3 5h18v14H3zM3 9h18' },
 ]
 
+const BASE = import.meta.env.BASE_URL
+
+// Чтобы форма РЕАЛЬНО отправляла заявки на почту — вставь сюда endpoint Formspree.
+// Регистрация ~2 минуты на formspree.io → создать форму → скопировать адрес
+// вида https://formspree.io/f/abcdwxyz и вставить в кавычки ниже.
+// Пока строка пустая — форма работает в демо-режиме (показывает подтверждение, но не шлёт).
+const FORMSPREE_ENDPOINT = ''
+
 export default function Landing() {
   const [toast, setToast] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  const submit = (e: FormEvent<HTMLFormElement>) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.currentTarget
     const name = (form.elements.namedItem('name') as HTMLInputElement).value.trim()
@@ -55,9 +64,29 @@ export default function Landing() {
       ;(name ? (form.elements.namedItem('email') as HTMLInputElement) : (form.elements.namedItem('name') as HTMLInputElement)).focus()
       return
     }
+    if (FORMSPREE_ENDPOINT) {
+      try {
+        const res = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData(form) })
+        if (!res.ok) throw new Error('bad status')
+      } catch {
+        alert('Не удалось отправить заявку. Попробуйте позже.')
+        return
+      }
+    }
     setToast(true)
     form.reset()
     setTimeout(() => setToast(false), 3200)
+  }
+
+  const deckUrl = typeof window !== 'undefined' ? window.location.origin + BASE + 'presentation.html' : ''
+  const shareDeck = async () => {
+    try {
+      await navigator.clipboard.writeText(deckUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2200)
+    } catch {
+      /* clipboard недоступен — тихо игнорируем */
+    }
   }
 
   return (
@@ -73,7 +102,7 @@ export default function Landing() {
                   Ваш бизнес<br />на <span className="text-accent">автопилоте</span>
                 </h1>
                 <p className="mt-[22px] max-w-[34ch] text-[1.14rem] text-panel-soft">
-                  Пульс забирает рутину — заявки, счета, напоминания и отчёты — чтобы вы занимались ростом, а не операционкой.
+                  Пульс забирает рутину — заявки, счета, напоминания и отчёты, чтобы вы занимались ростом, а не операционкой.
                 </p>
                 <div className="mt-[30px] flex flex-wrap gap-3">
                   <button onClick={() => scrollTo('signup')} className="rounded-xl bg-accent-bg px-[1.4em] py-[0.85em] font-semibold text-white transition-colors hover:bg-accent-bg-hov">
@@ -197,6 +226,47 @@ export default function Landing() {
         </Wrap>
       </section>
 
+      {/* PRESENTATION */}
+      <section className="pb-[76px] pt-1">
+        <Wrap>
+          <div className="grid items-center gap-8 rounded-[26px] border border-panel-line bg-panel p-8 text-panel-ink sm:p-12 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <Eyebrow className="text-[#FF6A73]">Презентация</Eyebrow>
+              <h2 className="mt-3 text-[clamp(1.7rem,3vw,2.4rem)] font-extrabold leading-[1.05]">Как автоматизировать продажи</h2>
+              <p className="mt-3 max-w-[46ch] text-[1rem] text-panel-soft">
+                Готовый питч-дек на 10 слайдов: боль, механика автоматизации, ИИ-агент и результаты. Доступен в PPTX и онлайн.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a href={`${BASE}puls-presentation.pptx`} download className="rounded-xl bg-accent-bg px-[1.3em] py-[0.8em] font-semibold text-white transition-colors hover:bg-accent-bg-hov">
+                  Скачать PPTX ↓
+                </a>
+                <a href={`${BASE}presentation.html`} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-panel-line px-[1.3em] py-[0.8em] font-semibold text-panel-ink transition-colors hover:border-panel-soft">
+                  Открыть онлайн ↗
+                </a>
+                <button onClick={shareDeck} className="rounded-xl border border-panel-line px-[1.3em] py-[0.8em] font-semibold text-panel-ink transition-colors hover:border-panel-soft">
+                  {copied ? '✓ Ссылка скопирована' : 'Поделиться'}
+                </button>
+              </div>
+            </div>
+            {/* обложка деки */}
+            <div className="flex aspect-[16/10] flex-col justify-between overflow-hidden rounded-2xl border border-panel-line bg-[#0A0D12] p-6">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-panel-soft">Пульс · дек</span>
+                <span className="rounded-full border border-panel-line px-2 py-0.5 font-mono text-[0.6rem] text-panel-soft">10 слайдов</span>
+              </div>
+              <svg viewBox="0 0 300 40" className="w-full" fill="none" aria-hidden="true">
+                <path d="M0 22 H58 l5 -14 5 24 5 -17 4 7 H150 l5 -14 5 24 5 -17 4 7 H210 l5 -14 5 24 5 -17 4 7 H300"
+                  stroke="var(--color-accent)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div>
+                <div className="font-display text-[1.3rem] font-extrabold leading-tight text-panel-ink">Как автоматизировать продажи</div>
+                <div className="mt-1 font-mono text-[0.75rem] text-panel-soft">PPTX · HTML</div>
+              </div>
+            </div>
+          </div>
+        </Wrap>
+      </section>
+
       {/* LEAD MAGNET */}
       <section className="pb-[76px]">
         <Wrap>
@@ -255,7 +325,9 @@ export default function Landing() {
                 Получить доступ
               </button>
               <p className="text-center text-[0.78rem] text-panel-soft">
-                Нажимая кнопку, вы соглашаетесь на обработку данных. Это демо-страница портфолио — заявка никуда не отправляется.
+                {FORMSPREE_ENDPOINT
+                  ? 'Нажимая кнопку, вы соглашаетесь на обработку данных. Мы свяжемся с вами в ближайшее время.'
+                  : 'Нажимая кнопку, вы соглашаетесь на обработку данных. Форма в демо-режиме — подключается к почте за пару минут (см. код).'}
               </p>
             </form>
           </div>
