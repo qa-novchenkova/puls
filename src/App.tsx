@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
+import ChatWidget from './components/ChatWidget'
 import Landing from './pages/Landing'
 import Glossary from './pages/Glossary'
 
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/glossary" element={<Glossary />} />
       </Routes>
       <Footer />
+      <ChatWidget />
     </>
   )
 }
