@@ -6,6 +6,7 @@ import ChatWidget from './components/ChatWidget'
 import Landing from './pages/Landing'
 import Glossary from './pages/Glossary'
 import Quiz from './pages/Quiz'
+import Game from './pages/Game'
 
 // при переходе на новую страницу — прокрутка наверх
 function ScrollToTop() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/glossary" element={<Glossary />} />
         <Route path="/quiz" element={<Quiz />} />
+        <Route path="/game" element={<Game />} />
       </Routes>
       <Footer />
       <ChatWidget />

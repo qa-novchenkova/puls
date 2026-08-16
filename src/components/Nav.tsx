@@ -64,6 +64,7 @@ export default function Nav() {
           <button className={link} onClick={() => scrollTo('features')}>Возможности</button>
           <Link className={link} to="/glossary">Глоссарий</Link>
           <Link className={link} to="/quiz">Тест</Link>
+          <Link className={link} to="/game">Игра</Link>
           <ThemeBtn />
           <button
             onClick={() => scrollTo('signup')}
@@ -100,6 +101,7 @@ export default function Nav() {
             <button className="py-2.5 text-left text-[1rem] font-medium text-ink-soft" onClick={() => scrollTo('features')}>Возможности</button>
             <Link className="py-2.5 text-left text-[1rem] font-medium text-ink-soft" to="/glossary" onClick={() => setMenu(false)}>Глоссарий</Link>
             <Link className="py-2.5 text-left text-[1rem] font-medium text-ink-soft" to="/quiz" onClick={() => setMenu(false)}>Тест</Link>
+            <Link className="py-2.5 text-left text-[1rem] font-medium text-ink-soft" to="/game" onClick={() => setMenu(false)}>Игра</Link>
             <button
               onClick={() => scrollTo('signup')}
               className="mt-2 rounded-xl bg-accent-bg px-[1.1em] py-[0.75em] text-center text-[0.96rem] font-semibold text-white"
