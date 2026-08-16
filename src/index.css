@@ -105,6 +105,11 @@ body {
   border-radius: 6px;
 }
 
+/* курсор-рука на всём кликабельном (Tailwind v4 по умолчанию ставит кнопкам стрелку) */
+button, a, label, summary, [role="button"], select { cursor: pointer; }
+button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
+input, textarea { cursor: text; }
+
 /* якоря не прячутся под липкую шапку */
 [id] { scroll-margin-top: 88px; }
 

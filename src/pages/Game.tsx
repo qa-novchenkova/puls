@@ -7,7 +7,7 @@ type Status = 'idle' | 'play' | 'over'
 const START_LIVES = 3
 const KINDS = [
   { label: 'Сайт', d: 'M4 4h16v12H7l-3 3V4z' },
-  { label: 'Telegram', d: 'M4 12l16-8-6 8 6 8-16-8z' },
+  { label: 'Мессенджер', d: 'M4 12l16-8-6 8 6 8-16-8z' },
   { label: 'Звонок', d: 'M5 4h4l1 5-2 1a12 12 0 006 6l1-2 5 1v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z' },
   { label: 'Почта', d: 'M3 5h18v14H3zM3 7l9 6 9-6' },
 ]
